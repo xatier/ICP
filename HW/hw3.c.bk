@@ -1,0 +1,79 @@
+/* ----------------------------------------- *
+|   IPC homework #3                          |
+|   Prime factorization and divisor          |
+|   Due date: 11/ 3                          |
+|   0016045 ymli @ cs104                     |
+|                                            |
+|   P.S.                                     |
+|     using C99 standard                     |
+|     gcc -std=c99 -Wall -Wextra -pedantic   |
+|         -Ofast hw3.c -lm -o hw3            |
+* ----------------------------------------- */
+
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#define MAX  600000000                           // the max number will be tested
+
+bool *is_prime;                                  // all numbers
+int *prime;                                      // the prime table
+int prime_ptr;                                   // how many prime we have
+
+void build (void) {                              // build the prime table
+  int i, j;
+
+  is_prime = (bool *)malloc(MAX*sizeof(bool));   // allocate space for two pointers 
+  prime = (int *)malloc(MAX*sizeof(int));
+
+  memset (is_prime, 1, MAX*sizeof(bool));        // fill '1' in is_prime
+
+// sieve method
+  for( i = 2; i < MAX; i++) 
+    if(is_prime[i]) 
+      for(j = i<<1; j < MAX; j += i)
+        is_prime[j] = 0;
+
+  for (prime_ptr = 0, i = 2; i < MAX; i++)
+    if (is_prime[i])
+      prime[prime_ptr++] = i;
+  
+  free(is_prime);                                // let me freee
+}
+
+
+void factorization (int n) {
+  int i = 0, p, e;
+  double s = 1.0, t = 1.0;                       // s for number of divisors, t for sum of divisors
+  while (prime[i] <= n) {                        // check all primes less or eaqual than n
+    p = prime[i];
+    e = 0;
+    while (!(n % p)) {                           // n is divisible by p
+      e++;
+      n /= p;                                    // divide n by p
+    }
+    if (e > 0) {
+      printf("pow(%d,%d)", p, e);
+      s *= (double)(e+1);
+      t *= (double)(pow((double)p, (double)(e+1)) - 1)/(double)(p-1);
+    }
+    i++;                                         // next prime
+  }
+  printf("\nNumber of divisors = %.0f\n", s);
+  printf("Sum of divisors = %.0f\n", t);
+}
+
+int main (void) {
+  int n;
+  build();
+  printf("Enter an integer >= 2:");
+  while (scanf("%d", &n) != EOF) {
+    printf("Prime factorization of %d = ", n);
+    factorization(n);
+    printf("\nEnter an integer >= 2:");
+  }
+  free(prime);                                    // free the prime table
+  return 0;
+}
